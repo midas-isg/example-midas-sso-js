@@ -4,29 +4,13 @@ window.addEventListener('load', function() {
     if (doesUserLogInLocally()) {
         showThePage();
     } else {
-        auth0.getSSOData(onSsoDataHandlingAuthentication);
+        redirectTo(toAbsoluteUrl('/login.html?targetUrl=' + window.location.href));
     }
 
     setInterval(logoutIfLoggedOutGloballyByAnotherApp, 5000);
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Helper function section
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    function onSsoDataHandlingAuthentication(err, data) {
-        var hasSsoSession = !err && data && data.sso;
-        if (hasSsoSession)
-            redirectToAuth0ForSso();
-        else
-            redirectTo(toMidasAccountsUrl('/sso'));
-
-        function redirectToAuth0ForSso() {
-            auth0.signin({
-                connection: data.lastUsedConnection.name,
-                state: window.location.href,
-                scope: 'openid name picture roles'
-            });
-        }
-    }
-
     function logout() {
         localStorage.removeItem(KEY_LOCAL_STORAGE_USER_TOKEN);
         localStorage.removeItem(KEY_LOCAL_STORAGE_PROFILE);
