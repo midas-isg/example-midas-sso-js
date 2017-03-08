@@ -20,6 +20,7 @@ window.addEventListener('load', function() {
             switch (route) {
                 case "":
                 case "/":
+                case "/index.html":
                     showLandingPageComponents();
                     break;
                 case aid.html.route.user:
