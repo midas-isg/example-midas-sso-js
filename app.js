@@ -1,94 +1,50 @@
 window.addEventListener('load', function() {
-    var auth0 = newAuth0();
-
-    if (doesUserLogInLocally()) {
+    if (aid.doesUserLogInLocally()) {
         showThePage();
     } else {
-        redirectTo(toAbsoluteUrl('/login.html?targetUrl=' + window.location.href));
+        aid.redirectTo(aid.toAbsoluteUrl('/login.html?targetUrl=' + window.location.href));
     }
 
-    setInterval(logoutIfLoggedOutGloballyByAnotherApp, 5000);
+    setInterval(aid.logoutIfLoggedOutGloballyByAnotherApp, 5000);
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Helper function section
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    function logout() {
-        localStorage.removeItem(KEY_LOCAL_STORAGE_USER_TOKEN);
-        localStorage.removeItem(KEY_LOCAL_STORAGE_PROFILE);
-        redirectTo(toMidasAccountsUrl('/signoff', 'Logged off successfully'));
-    }
-
-    function logoutIfLoggedOutGloballyByAnotherApp() {
-        if (! doesUserLogInLocally()) return;
-        auth0.getSSOData(onSsoDataHandlingLogoutIfNoSsoSession);
-
-        function onSsoDataHandlingLogoutIfNoSsoSession(err, data) {
-            var hasSsoSession = !err && data && data.sso;
-            if (! hasSsoSession)
-                logout();
-        }
-    }
-
-    function newAuth0() {
-        return new Auth0({
-            domain: AUTH0_DOMAIN,
-            clientID: AUTH0_CLIENT_ID,
-            callbackURL: toAbsoluteUrl(AUTH0_CALLBACK),
-            callbackOnLocationHash: true
-        });
-    }
-
-    function toAbsoluteUrl(path) {
-        path = path || "";
-        return window.location.href.split(CONTEXT)[0] + CONTEXT + path;
-    }
-
-    function doesUserLogInLocally() {
-        return !! (localStorage.getItem(KEY_LOCAL_STORAGE_USER_TOKEN));
-    }
-
-    function showThePage(targetUrl) {
-        if (targetUrl)
-            redirectTo(targetUrl);
-
+    function showThePage() {
         var locationPath = window.location.pathname;
         document.body.style.display = 'inline';
-        routeByUserRole(locationPath.replace(CONTEXT, ''));
+        routeByUserRole(locationPath.replace(aid.html.context, ''));
 
         function routeByUserRole(route) {
-            var profile = JSON.parse(localStorage.getItem(KEY_LOCAL_STORAGE_PROFILE));
+            var profile = JSON.parse(localStorage.getItem(aid.html.localStorage.profile));
             switch (route) {
                 case "":
                 case "/":
                     showLandingPageComponents();
                     break;
-                case ROUTE_USER:
-                    secureRoute(ROLE_ISG_USER);
+                case aid.html.route.user:
+                    secureRoute(aid.midas.role.isgUser);
                     break;
-                case ROUTE_ADMIN:
-                    secureRoute(ROLE_ISG_ADMIN);
+                case aid.html.route.admin:
+                    secureRoute(aid.midas.role.isgAdmin);
                     break;
             }
 
             function showLandingPageComponents() {
-                var baseUrl = toAbsoluteUrl();
+                var baseUrl = aid.toAbsoluteUrl();
                 hide(document.getElementById('btn-login'));
                 showCommonComponentsInAllPages();
                 showProfile(profile);
-                if (hasRole(profile, ROLE_ISG_ADMIN)) {
-                    rewireAndShowButtonById('btn-go-admin', baseUrl + ROUTE_ADMIN);
+                if (aid.hasRole(profile, aid.midas.role.isgAdmin)) {
+                    rewireAndShowButtonById('btn-go-admin', baseUrl + aid.html.route.admin);
                 }
-                if (hasRole(profile, ROLE_ISG_USER)) {
-                    rewireAndShowButtonById('btn-go-user', baseUrl + ROUTE_USER);
+                if (aid.hasRole(profile, aid.midas.role.isgUser)) {
+                    rewireAndShowButtonById('btn-go-user', baseUrl + aid.html.route.user);
                 }
             }
 
             function secureRoute(requiredRole) {
-                if (!hasRole(profile, requiredRole)) {
-                    if (profile)
-                        redirectTo('unauthorized.html');
-                    else
-                        redirectTo(CONTEXT);
-
+                if (!aid.hasRole(profile, requiredRole)) {
+                    aid.redirectTo('unauthorized.html');
                 } else{
                     showCommonComponentsInAllPages();
                 }
@@ -97,7 +53,7 @@ window.addEventListener('load', function() {
             function showCommonComponentsInAllPages() {
                 var buttonLogout = document.getElementById('btn-logout');
                 show(buttonLogout);
-                addClickListener(buttonLogout, logout);
+                addClickListener(buttonLogout, aid.logout);
                 show(document.querySelector('.container'));
                 document.getElementById('nickname').textContent = profile.nickname;
             }
@@ -125,20 +81,6 @@ window.addEventListener('load', function() {
         show(document.getElementById("profile"));
     }
 
-    function toMidasAccountsUrl(endpoint, message, title) {
-        title = title || "JS Example";
-        message = message || "Please login to use the services";
-        return MIDAS_ACCOUNTS_URL + endpoint + '?returnToUrl='
-            + encodeURIComponent(window.location) + '&title=' + title + '&message=' + message;
-    }
-
-    function hasRole(profile, role) {
-        return !!(profile &&
-        profile.app_metadata &&
-        profile.app_metadata.roles &&
-        profile.app_metadata.roles.indexOf(role) > -1);
-    }
-
     function hide(element) {
         element.style.display = "none";
     }
@@ -151,9 +93,5 @@ window.addEventListener('load', function() {
         if (button) {
             button.addEventListener('click', callback);
         }
-    }
-
-    function redirectTo(href) {
-        window.location.href = href;
     }
 });
