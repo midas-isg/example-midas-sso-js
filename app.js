@@ -1,4 +1,5 @@
 window.addEventListener('load', function() {
+    hide(document.body);
     if (aid.doesUserLogInLocally()) {
         showThePage();
     } else {
