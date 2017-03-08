@@ -1,7 +1,9 @@
 window.addEventListener('load', function() {
     var auth0 = newAuth0();
     handleCallbackFromAuth0(toAuthResultFromLocationHash());
-
+    setTimeout(function() {
+        document.querySelector('.container').style.display = "inline-block";
+    }, 1000);
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Helper function section
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -34,7 +36,7 @@ window.addEventListener('load', function() {
     }
 
     function showThePage(targetUrl) {
-        targetUrl = targetUrl || '';
+        targetUrl = targetUrl || CONTEXT;
         redirectTo(targetUrl);
     }
 
